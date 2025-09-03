@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام حجز القاعات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Tajawal',sans-serif;}
+body{background:linear-gradient(135deg,#f5f7fa 0%,#e4e8f0 100%);color:#333;line-height:1.6;min-height:100vh;padding:20px;}
+.container{max-width:1200px;margin:0 auto;}
+header{background:white;border-radius:10px;padding:20px;margin-bottom:30px;box-shadow:0 5px 15px rgba(0,0,0,.1);display:flex;justify-content:space-between;align-items:center;}
+.logo h1{font-size:24px;color:#1e3a8a;margin-right:15px;} /* لون موحد للنص */
+.logo span{color:#1e3a8a;} /* نفس لون النص الرئيسي */
+.user-actions{display:flex;align-items:center;gap:15px;}
+.btn{padding:10px 20px;border:none;border-radius:5px;cursor:pointer;font-weight:500;transition:all .3s;display:flex;align-items:center;gap:8px;}
+.btn-primary{background-color:#1e3a8a;color:white;}
+.btn-primary:hover{background-color:#0f172a;}
+.btn-secondary{background-color:#e2e8f0;color:#475569;}
+.btn-secondary:hover{background-color:#cbd5e1;}
+.btn-danger{background-color:#ef4444;color:white;}
+.btn-danger:hover{background-color:#dc2626;}
+.btn-success{background-color:#10b981;color:white;}
+.btn-success:hover{background-color:#059669;}
+.btn-sm{padding:6px 12px;font-size:14px;}
+.admin-panel{background:white;border-radius:10px;padding:25px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:30px;}
+.admin-panel h2{font-size:22px;color:#1e3a8a;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid#e2e8f0;}
+.admin-actions{display:flex;flex-wrap:wrap;gap:15px;margin-bottom:20px;}
+.booking-form{background:white;border-radius:10px;padding:25px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:30px;}
+.form-title{font-size:22px;color:#1e3a8a;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid#e2e8f0;}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:20px;}
+.form-group{margin-bottom:15px;}
+.form-group label{display:block;margin-bottom:8px;font-weight:500;color:#374151;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 15px;border:1px solid #d1d5db;border-radius:5px;font-size:16px;transition:all .3s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#60a5fa;outline:none;box-shadow:0 0 0 3px rgba(96,165,250,.2);}
+.form-actions{display:flex;justify-content:flex-end;gap:15px;margin-top:20px;}
+.bookings-list{background:white;border-radius:10px;padding:25px;box-shadow:0 5px 15px rgba(0,0,0,.1);}
+.bookings-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.bookings-header h2{font-size:22px;color:#1e3a8a;}
+.date-filter{display:flex;align-items:center;gap:10px;}
+table{width:100%;border-collapse:collapse;}
+th,td{padding:15px;text-align:right;border-bottom:1px solid #e2e8f0;}
+th{background-color:#f1f5f9;color:#475569;font-weight:500;}
+tr:hover{background-color:#f8fafc;}
+.action-icon{margin-left:10px;cursor:pointer;color:#64748b;transition:all .3s;}
+.action-icon:hover{color:#1e3a8a;}
+.no-bookings{text-align:center;padding:30px;color:#64748b;}
+.no-bookings i{font-size:50px;margin-bottom:15px;color:#cbd5e1;}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);justify-content:center;align-items:center;z-index:1000;}
+.modal-content{background-color:white;padding:30px;border-radius:10px;width:90%;max-width:500px;box-shadow:0 5px 25px rgba(0,0,0,.2);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #e2e8f0;}
+.modal-header h3{font-size:20px;color:#1e3a8a;}
+.close{font-size:24px;cursor:pointer;color:#64748b;}
+.modal-body{margin-bottom:20px;}
+.modal-footer{display:flex;justify-content:flex-end;gap:15px;}
+.backup-section{margin-top:20px;padding:15px;background:#f8fafc;border-radius:8px;border:1px dashed #d1d5db;}
+.backup-section h3{color:#1e3a8a;margin-bottom:10px;}
+.backup-actions{display:flex;gap:10px;flex-wrap:wrap;}
+@media(max-width:768px){.form-row{grid-template-columns:1fr;}.admin-actions{flex-direction:column;}header{flex-direction:column;gap:15px;text-align:center;}.user-actions{justify-content:center;}.bookings-header{flex-direction:column;align-items:flex-start;gap:15px;}.date-filter{width:100%;justify-content:flex-end;}.backup-actions{flex-direction:column;}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<div class="logo">
+<h1>نظام حجز القاعات</h1> <!-- تم إزالة span وجعل النص بلون موحد -->
+</div>
+<div class="user-actions">
+<button class="btn btn-secondary" id="employeeView"><i class="fas fa-eye"></i> واجهة الموظف</button>
+<button class="btn btn-primary" id="adminLoginBtn"><i class="fas fa-lock"></i> دخول المسؤول</button>
+</div>
+</header>
+
+<!-- قسم المسؤول -->
+<div class="admin-panel" id="adminPanel">
+<h2>لوحة تحكم المسؤول</h2>
+<div class="admin-actions">
+<button class="btn btn-primary" id="exportDataBtn"><i class="fas fa-file-export"></i> تصدير البيانات إلى Excel</button>
+<button class="btn btn-danger" id="clearDataBtn"><i class="fas fa-trash"></i> حذف جميع الحجوزات</button>
+</div>
+
+<!-- قسم النسخ الاحتياطي -->
+<div class="backup-section">
+<h3><i class="fas fa-database"></i> النسخ الاحتياطي والاستعادة</h3>
+<p>لضمان عدم فقدان البيانات، قم بعمل نسخة احتياطية من الحجوزات بشكل دوري.</p>
+<div class="backup-actions">
+<button class="btn btn-success" id="backupDataBtn"><i class="fas fa-download"></i> نسخ احتياطي للحجوزات</button>
+<button class="btn btn-secondary" id="restoreDataBtn"><i class="fas fa-upload"></i> استعادة الحجوزات</button>
+<input type="file" id="restoreFileInput" accept=".json" style="display:none;">
+</div>
+</div>
+</div>
+
+<!-- نموذج حجز القاعة -->
+<div class="booking-form">
+<h2 class="form-title">نموذج حجز قاعة</h2>
+<div class="form-row">
+<div class="form-group">
+<label for="office">المكتب</label>
+<select id="office">
+<option value="">-- اختر المكتب --</option>
+<option value="دمشق">دمشق</option>
+<option value="حلب">حلب</option>
+<option value="الدانا">الدانا</option>
+</select>
+</div>
+<div class="form-group">
+<label for="room">القاعة</label>
+<select id="room">
+<option value="">-- اختر القاعة --</option>
+</select>
+</div>
+<div class="form-group">
+<label for="employeeName">اسم الموظف</label>
+<input type="text" id="employeeName">
+</div>
+<div class="form-group">
+<label for="department">القسم</label>
+<input type="text" id="department">
+</div>
+<div class="form-group">
+<label for="date">التاريخ</label>
+<input type="date" id="date">
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="start-time">وقت البدء</label>
+<input type="time" id="start-time">
+</div>
+<div class="form-group">
+<label for="end-time">وقت الانتهاء</label>
+<input type="time" id="end-time">
+</div>
+</div>
+<!-- إضافة خانة الملاحظات -->
+<div class="form-row">
+<div class="form-group" style="grid-column: 1 / -1;">
+<label for="notes">ملاحظات</label>
+<textarea id="notes" rows="3" placeholder="أضف أي ملاحظات إضافية هنا..."></textarea>
+</div>
+</div>
+<div class="form-actions">
+<button class="btn btn-secondary" id="cancelBtn">إلغاء</button>
+<button class="btn btn-primary" id="bookBtn">حجز الآن</button>
+</div>
+</div>
+
+<!-- قائمة الحجوزات -->
+<div class="bookings-list">
+<div class="bookings-header">
+<h2>الحجوزات الحالية</h2>
+<div class="date-filter">
+<input type="date" id="filterDate">
+</div>
+</div>
+<table>
+<thead>
+<tr>
+<th>رقم الحجز</th>
+<th>المكتب</th>
+<th>القاعة</th>
+<th>اسم الموظف</th>
+<th>القسم</th>
+<th>التاريخ</th>
+<th>الوقت</th>
+<th>وقت التقديم</th>
+<th>الإجراءات</th>
+</tr>
+</thead>
+<tbody id="bookingsTableBody"></tbody>
+<div class="no-bookings" id="noBookingsMessage" style="display:none;">
+<i class="fas fa-calendar-times"></i>
+<p>لا توجد حجوزات للتاريخ المحدد</p>
+</div>
+</table>
+</div>
+</div>
+
+<!-- نافذة تسجيل الدخول -->
+<div class="modal" id="loginModal">
+<div class="modal-content">
+<div class="modal-header">
+<h3>تسجيل دخول المسؤول</h3>
+<span class="close" id="closeLogin">&times;</span>
+</div>
+<div class="modal-body">
+<div class="form-group">
+<label for="email">البريد الإلكتروني (Gmail)</label>
+<input type="email" id="email">
+</div>
+<div class="form-group">
+<label for="password">كلمة المرور</label>
+<input type="password" id="password">
+</div>
+<div class="form-group">
+<button class="btn btn-primary" id="confirmLogin">تسجيل الدخول</button>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" id="cancelLogin">إلغاء</button>
+</div>
+</div>
+</div>
+
+<script>
+
+function encodeData(data) {
+    return btoa(unescape(encodeURIComponent(data)));
+}
+
+function decodeData(encoded) {
+    return decodeURIComponent(escape(atob(encoded)));
+}
+
+
+const encodedEmail = 'bWFqZC5iaXRhcjgwQGdtYWlsLmNvbQ=='; 
+const encodedPassword = 'MTIzNG1tbW0xMjM0'; 
+
+const adminPanel = document.getElementById("adminPanel");
+adminPanel.style.display = "none";
+const bookingsTableBody = document.getElementById("bookingsTableBody");
+const noBookingsMessage = document.getElementById("noBookingsMessage");
+const filterDate = document.getElementById("filterDate");
+const roomSelect = document.getElementById("room");
+const officeSelect = document.getElementById("office");
+const employeeNameInput = document.getElementById("employeeName");
+const departmentInput = document.getElementById("department");
+const notesInput = document.getElementById("notes");
+
+let bookingsData = JSON.parse(localStorage.getItem("bookingsData")) || [];
+
+const officeRooms = {
+  "دمشق": ["قاعة الاجتماعات"],
+  "حلب": ["قاعة الموكامبو", "قاعة المحافظة"],
+  "الدانا": ["القاعة 27", "القاعة 48"]
+};
+
+function updateRoomOptions() {
+  const office = officeSelect.value;
+  roomSelect.innerHTML = '<option value="">-- اختر القاعة --</option>';
+  if (officeRooms[office]) {
+    officeRooms[office].forEach(r => {
+      const opt = document.createElement("option");
+      opt.value = r;
+      opt.textContent = r;
+      roomSelect.appendChild(opt);
+    });
+  }
+}
+officeSelect.addEventListener("change", updateRoomOptions);
+
+function formatDate(date) {
+  const d = new Date(date);
+  return d.toISOString().split("T")[0];
+}
+
+function formatDateTime(date) {
+  const d = new Date(date);
+  return d.toLocaleString();
+}
+
+
+function isValidTime(date, time) {
+  const now = new Date();
+  const selectedDateTime = new Date(`${date}T${time}`);
+  
+  return selectedDateTime > now;
+}
+
+function displayBookings() {
+  bookingsTableBody.innerHTML = "";
+  const selectedDate = filterDate.value;
+  const filtered = bookingsData.filter(b => b.date === selectedDate);
+  
+  if (filtered.length === 0) {
+    noBookingsMessage.style.display = "block";
+  } else {
+    noBookingsMessage.style.display = "none";
+    filtered.forEach(b => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>#${b.id}</td>
+        <td>${b.office}</td>
+        <td>${b.room}</td>
+        <td>${b.employeeName}</td>
+        <td>${b.department}</td>
+        <td>${b.date}</td>
+        <td>${b.startTime} - ${b.endTime}</td>
+        <td>${b.submissionTime}</td>
+        <td>
+          <i class="fas fa-edit action-icon admin-only" data-id="${b.id}" style="display: ${adminLoggedIn ? 'inline-block' : 'none'}"></i>
+          <i class="fas fa-trash action-icon admin-only" data-id="${b.id}" style="display: ${adminLoggedIn ? 'inline-block' : 'none'}"></i>
+        </td>
+      `;
+      bookingsTableBody.appendChild(row);
+    });
+  }
+}
+
+filterDate.addEventListener("change", displayBookings);
+
+let adminLoggedIn = false;
+
+document.getElementById("adminLoginBtn").addEventListener("click", () => {
+  document.getElementById("loginModal").style.display = "flex";
+});
+
+document.getElementById("closeLogin").addEventListener("click", () => {
+  document.getElementById("loginModal").style.display = "none";
+});
+
+document.getElementById("cancelLogin").addEventListener("click", () => {
+  document.getElementById("loginModal").style.display = "none";
+});
+
+document.getElementById("confirmLogin").addEventListener("click", () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  
+ 
+  const decodedEmail = decodeData(encodedEmail);
+  const decodedPassword = decodeData(encodedPassword);
+  
+  if (email === decodedEmail && password === decodedPassword) {
+    adminLoggedIn = true;
+    adminPanel.style.display = "block";
+    document.getElementById("loginModal").style.display = "none";
+    displayBookings();
+    alert("تم تسجيل الدخول بنجاح!");
+  } else {
+    alert("الإيميل أو كلمة المرور غير صحيحة");
+  }
+});
+
+document.getElementById("employeeView").addEventListener("click", () => {
+  adminLoggedIn = false;
+  adminPanel.style.display = "none";
+  displayBookings();
+});
+
+document.getElementById("bookBtn").addEventListener("click", () => {
+  const office = officeSelect.value;
+  const room = roomSelect.value;
+  const employeeName = employeeNameInput.value;
+  const department = departmentInput.value;
+  const date = document.getElementById("date").value;
+  const startTime = document.getElementById("start-time").value;
+  const endTime = document.getElementById("end-time").value;
+  const notes = notesInput.value;
+  const submissionTime = formatDateTime(new Date());
+
+  if (!office || !room || !employeeName || !department || !date || !startTime || !endTime) {
+    alert("الرجاء ملء جميع الحقول");
+    return;
+  }
+
+
+  if (!isValidTime(date, startTime)) {
+    alert("وقت البدء غير صحيح. لا يمكن حجز قاعة في وقت ماضي.");
+    return;
+  }
+
+
+  if (!isValidTime(date, endTime)) {
+    alert("وقت الانتهاء غير صحيح. لا يمكن أن ينتهي الحجز في وقت ماضي.");
+    return;
+  }
+
+ 
+  if (startTime >= endTime) {
+    alert("وقت الانتهاء يجب أن يكون بعد وقت البدء.");
+    return;
+  }
+
+
+  const conflict = bookingsData.some(b => b.date === date && b.room === room &&
+    ((startTime >= b.startTime && startTime < b.endTime) || (endTime > b.startTime && endTime <= b.endTime) || (startTime <= b.startTime && endTime >= b.endTime)));
+  if (conflict) {
+    alert("هذه القاعة محجوزة بالفعل في هذا التوقيت");
+    return;
+  }
+
+  const newBooking = {
+    id: Date.now(),
+    office, room, employeeName, department, date, startTime, endTime, notes, submissionTime
+  };
+  bookingsData.push(newBooking);
+  localStorage.setItem("bookingsData", JSON.stringify(bookingsData));
+  displayBookings();
+  
+
+  employeeNameInput.value = ""; 
+  departmentInput.value = ""; 
+  officeSelect.value = ""; 
+  roomSelect.innerHTML = '<option value="">-- اختر القاعة --</option>';
+  document.getElementById("date").value = ""; 
+  document.getElementById("start-time").value = ""; 
+  document.getElementById("end-time").value = "";
+  notesInput.value = "";
+  
+  alert("تم حجز القاعة بنجاح");
+});
+
+bookingsTableBody.addEventListener("click", e => {
+  if (!adminLoggedIn) return;
+  
+  if (e.target.classList.contains("fa-trash")) {
+    const id = Number(e.target.dataset.id);
+    if (confirm("هل أنت متأكد من حذف هذا الحجز؟")) {
+      bookingsData = bookingsData.filter(b => b.id !== id);
+      localStorage.setItem("bookingsData", JSON.stringify(bookingsData));
+      displayBookings();
+    }
+  }
+  
+  if (e.target.classList.contains("fa-edit")) {
+    const id = Number(e.target.dataset.id);
+    const booking = bookingsData.find(b => b.id === id);
+    if (booking) {
+      officeSelect.value = booking.office;
+      updateRoomOptions();
+      roomSelect.value = booking.room;
+      employeeNameInput.value = booking.employeeName;
+      departmentInput.value = booking.department;
+      document.getElementById("date").value = booking.date;
+      document.getElementById("start-time").value = booking.startTime;
+      document.getElementById("end-time").value = booking.endTime;
+      notesInput.value = booking.notes || "";
+      
+
+      bookingsData = bookingsData.filter(b => b.id !== id);
+      localStorage.setItem("bookingsData", JSON.stringify(bookingsData));
+      displayBookings();
+    }
+  }
+});
+
+
+document.getElementById("exportDataBtn").addEventListener("click", () => {
+  let csv = "رقم الحجز,المكتب,القاعة,اسم الموظف,القسم,التاريخ,الوقت,الملاحظات,وقت التقديم\n";
+  bookingsData.forEach(b => {
+    csv += `${b.id},${b.office},${b.room},${b.employeeName},${b.department},${b.date},${b.startTime}-${b.endTime},"${b.notes || ''}",${b.submissionTime}\n`;
+  });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", "bookings.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
+
+
+document.getElementById("clearDataBtn").addEventListener("click", () => {
+  if (confirm("هل أنت متأكد من حذف جميع الحجوزات؟ هذا الإجراء لا يمكن التراجع عنه.")) {
+    bookingsData = [];
+    localStorage.removeItem("bookingsData");
+    displayBookings();
+    alert("تم حذف جميع الحجوزات بنجاح");
+  }
+});
+
+document.getElementById("backupDataBtn").addEventListener("click", () => {
+  const dataStr = JSON.stringify(bookingsData, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(dataBlob);
+  link.download = `bookings-backup-${new Date().toISOString().split('T')[0]}.json`;
+  link.click();
+  
+  alert("تم تحميل النسخة الاحتياطية بنجاح");
+});
+
+document.getElementById("restoreDataBtn").addEventListener("click", () => {
+  document.getElementById("restoreFileInput").click();
+});
+
+document.getElementById("restoreFileInput").addEventListener("change", function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+  try {
+      const restoredData = JSON.parse(e.target.result);
+      if (Array.isArray(restoredData)) {
+        if (confirm("هل تريد استبدال البيانات الحالية بالبيانات المستعادة؟")) {
+          bookingsData = restoredData;
+          localStorage.setItem("bookingsData", JSON.stringify(bookingsData));
+          displayBookings();
+          alert("تم استعادة البيانات بنجاح");
+        }
+      } else {
+        alert("ملف غير صالح. يجب أن يحتوي الملف على مصفوفة من الحجوزات.");
+      }
+    } catch (error) {
+      alert("خطأ في قراءة الملف: " + error.message);
+    }
+  };
+  reader.readAsText(file);
+});
+
+
+filterDate.value = formatDate(new Date());
+displayBookings();
+</script>
+</body>
+</html>
